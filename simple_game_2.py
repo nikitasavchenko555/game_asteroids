@@ -22,13 +22,15 @@ go3=0
 #флаг открытия огня
 fai_true = False
 EnemyList = []
+#скорость перемещения
+speed_int = 0
 
 fpsClock = pygame.time.Clock()
      
 def init_window():
     # Инициализируем pygame
     pygame.init()
-    # Создаём игровое окно 550*480
+    # Создаём игровое окно 
     window = pygame.display.set_mode((1000, 800))
     # Ставим свой заголовок окна
     pygame.display.set_caption('Астероиды')
@@ -89,27 +91,32 @@ class Faier(Skything):
     def __init__(self, cX, cY):
         Skything.__init__(self, "3.png", cX, cY)
 
-def input(events):
+def input(events, check_dist):
     global x_coord, y_coord, x_speed, y_speed, life, f_speed_x, fai_true
     # Перехватываем нажатия клавиш на клавиатуре
+    #speed_int = 0 
+    #print("зашли в функцию перехвата")
+    #print(events)
     for event in events:
+        print("зашли в цикл функции перехвата")
         if (event.type == QUIT) or (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()
             sys.exit(0)
         # Когда нажаты стрелки изменяем скорость НЛО
         # чтобы оно летело
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT: x_speed=-2
-            if event.key == pygame.K_RIGHT: x_speed=2
-            if event.key == pygame.K_UP: y_speed=-2
-            if event.key == pygame.K_DOWN: y_speed=2
+        if event.type == pygame.KEYDOWN and (event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN):
+            check_dist.append(event)
+            speed_nlo(event, check_dist)
         # Когда стрелки не нажаты скорость ставим в ноль
-        if event.type == pygame.KEYUP:
+        elif event.type == pygame.KEYUP:
+            check_dist.clear()
+            speed_nlo(event, check_dist)
             if event.key == pygame.K_LEFT: x_speed=0
             if event.key == pygame.K_RIGHT: x_speed=0
             if event.key == pygame.K_UP: y_speed=0
             if event.key == pygame.K_DOWN: y_speed=0
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            speed_int = 0
+        elif  event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             print("открыт огонь")
             fai_true = True
             #f_speed_x=+1
@@ -120,6 +127,28 @@ def input(events):
     if(x_coord>1000): x_coord=1000
     if(y_coord<0): y_coord=0
     if(y_coord>800): y_coord=800
+    
+    
+def speed_nlo(event, check_dist):
+    print("вызов функции изменения скорости")
+    global speed_int, x_speed, y_speed
+    if len(check_dist) > 0:
+        if speed_int <= 10:
+            speed_int  = speed_int +1
+        elif speed_int > 10:
+            speed_int = 0
+        print("скорость:", speed_int)
+        if event.key == pygame.K_LEFT: 
+             x_speed=-(speed_int*2)
+        elif event.key == pygame.K_RIGHT: 
+             x_speed=(speed_int*2)
+        elif event.key == pygame.K_UP: 
+             y_speed=-(speed_int*2)
+        elif event.key == pygame.K_DOWN: 
+             y_speed=(speed_int*2)
+    #speed_int = 0
+
+    
 
 def action(bk):
     global x_coord, y_coord, score, shag, go1, go2, go3, f_speed_x, fai_true
@@ -128,6 +157,7 @@ def action(bk):
     nlo = Nlo(1,320) 
     asterow=[]
     air = [] 
+    check_dist = []
     air.append(nlo)
     faier_bools = []
     #счетчик пропущенных астероидов
@@ -145,7 +175,7 @@ def action(bk):
     # Запускаем бесконечный цикл
     while 1:
         fpsClock.tick(50)
-        input(pygame.event.get())
+        input(pygame.event.get(), check_dist)
         asteroid = Asteroid(950,random.randint(100,700))
         #манипуляции для интервального старта астероидов
         #print(timer.tick())
@@ -161,14 +191,12 @@ def action(bk):
            a.rect.x = a.rect.x - 5
            if a.rect.x < 10:
               asterow.remove(a)
-              print("Удаляем астероид, вышедший за границы: ", a)
               ast_miss +=1
               #уменьшаем на одну жизнь, если пропущено каждые десять астероидов
               if ast_miss % 10 == 0:
                  score -=1
               asteroids.remove(a)
               asteroids.update()
-              print("Кол-во астероидов:",asteroids)
         #обновляем координаты нло
         nlo.rect.x=x_coord
         nlo.rect.y=y_coord
@@ -179,9 +207,9 @@ def action(bk):
                 asterow.remove(ast)
                 asteroids.remove(ast)
                 asteroids.update()
-                print("Кол-во астероидов:",asteroids)
+                #print("Кол-во астероидов:",asteroids)
             asteroids.remove(ast_del)
-            print(pygame.sprite.spritecollide(nlo, asteroids, True))
+            #print(pygame.sprite.spritecollide(nlo, asteroids, True))
             score  -=1
             #print("-жизнь")
             asteroids.draw(screen)
@@ -195,7 +223,7 @@ def action(bk):
         for f in faier.copy():
            f.rect.x = f.rect.x+10
            blocks_fai_list = pygame.sprite.spritecollide(f, asteroids, True)
-           print(blocks_fai_list)
+           #print(blocks_fai_list)
            if blocks_fai_list:
                faier.remove(f)
                faier.update()
@@ -204,9 +232,9 @@ def action(bk):
                      ast_dest +=1
                      asterow.remove(a)
                      asteroids.update()
-                     print("Кол-во астероидов:",asteroids)
+                     #print("Кол-во астероидов:",asteroids)
                      print(asteroids)
-           print("Изменение кол-ва файеров {}".format(len(faier)))
+           #print("Изменение кол-ва файеров {}".format(len(faier)))
            if f.rect.x >= 950:
                faier.remove(f)
                faier.update()
