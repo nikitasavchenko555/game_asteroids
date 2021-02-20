@@ -28,13 +28,12 @@ def draw_background():
 
 class Fire(pygame.sprite.Sprite):
     def __init__(self, cX, cY):
-        # Создаем спрайт из картинки
         pygame.sprite.Sprite.__init__(self)
-        screen = pygame.display.get_surface()
-        self.rect = screen.get_rect()
-        self.image = pygame.Surface((60, 60), pygame.SRCALPHA)
+        #screen = pygame.display.get_surface()
+        #self.rect = screen.get_rect()
+        self.image = pygame.Surface((60, 60))
+        self.rect = self.image.get_rect()
         self.image.fill((0, 255, 255))
-        # Перемещаем картинку в её начальные координаты
         self.rect.x = cX
         self.rect.y = cY
 
@@ -47,31 +46,29 @@ class Fire(pygame.sprite.Sprite):
 
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, cX, cY):
-        # Создаем спрайт из картинки
         pygame.sprite.Sprite.__init__(self)
-        screen = pygame.display.get_surface()
-        self.rect = screen.get_rect()
-        self.image = pygame.Surface((60, 60), pygame.SRCALPHA)
+        #screen = pygame.display.get_surface()
+        self.image = pygame.Surface((60, 60))
+        self.rect = self.image.get_rect()
         self.image.fill((255, 255, 1))
-        # Перемещаем картинку в её начальные координаты
         self.rect.x = cX
         self.rect.y = cY
 
     def update(self):
-        if self.rect.x >=0:
+        if self.rect.x >= 0:
             self.rect.x -= 5
         elif self.rect.x < 0:
             self.kill()
-       # print(self.rect, self.rect.x)
+    # print(self.rect, self.rect.x)
 
 
 class NLO(pygame.sprite.Sprite):
     def __init__(self, cX, cY):
         # Создаем спрайт из картинки
         pygame.sprite.Sprite.__init__(self)
-        screen = pygame.display.get_surface()
-        self.rect = screen.get_rect()
-        self.image = pygame.Surface((200, 100), pygame.SRCALPHA)
+        #screen = pygame.display.get_surface()
+        self.image = pygame.Surface((200, 100))
+        self.rect = self.image.get_rect()
         self.image.fill((0, 10, 255))
         # Перемещаем картинку в её начальные координаты
         self.rect.x = 0
@@ -84,11 +81,12 @@ class NLO(pygame.sprite.Sprite):
 
         elif self.rect.y < 0:
             self.rect.y = 0
-        #print(self.rect.y)
+        # print(self.rect.y)
 
 
 def action():
     screen = pygame.display.get_surface()
+    #print(screen.get_rect())
     nlo = NLO(0, 400)
     fire_bols = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
@@ -96,8 +94,8 @@ def action():
     while 1:
         fpsClock.tick(60)
         for event in pygame.event.get():
-            #print('count asteroids {}'.format(len(asteroids)))
-            #print('count fires {}'.format(len(fire_bols)))
+            # print('count asteroids {}'.format(len(asteroids)))
+            # print('count fires {}'.format(len(fire_bols)))
             if len(asteroids) <= 10:
                 asteroids.add(Asteroid(1500, random.randint(50, 720)))
             elif len(asteroids) > 10:
@@ -112,9 +110,9 @@ def action():
                     nlo.update(40)
                 if event.key == pygame.K_SPACE:
                     fire_bols.add(Fire(200, nlo.rect.y))
-                    pygame.display.flip()
-            #destroy_ast = pygame.sprite.groupcollide(fire_bols, asteroids, True, True)
-            #print(destroy_ast)
+            pygame.display.flip()
+            dict_group_col = pygame.sprite.groupcollide(fire_bols, asteroids, True, True)
+            print(dict_group_col)
         fire_bols.update()
         asteroids.update()
         screen.fill((0, 0, 0))
